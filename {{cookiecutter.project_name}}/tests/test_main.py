@@ -4,7 +4,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from {{cookiecutter.package_name}} import __main__
+from {{cookiecutter.package_name}}.cli import main
 
 
 class TestMain:
