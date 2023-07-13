@@ -1,6 +1,7 @@
 """Command-line interface."""
 import logging
 import sys
+from typing import TypeVar
 
 from loguru import logger
 
@@ -11,11 +12,12 @@ if not sys.warnoptions:
 
     warnings.simplefilter("ignore")
 
+TInterceptHandler = TypeVar("TInterceptHandler", bound="InterceptHandler")
 
 class InterceptHandler(logging.Handler):
     """Intercept standard logging."""
 
-    def emit(self, record: logging.LogRecord) -> None:
+    def emit(self: TInterceptHandler, record: logging.LogRecord) -> None:
         """Emit standard logging to loguru.
 
         Parameters
