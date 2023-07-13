@@ -28,7 +28,7 @@ nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = (
     "pre-commit",
     "safety",
-    "mypy",
+    "pyright",
     "tests",
     "typeguard",
     "xdoctest",
@@ -124,14 +124,15 @@ def precommit(session: Session) -> None:
         "black",
         "darglint",
         "flake8",
-        "flake8-bugbear",
-        "flake8-docstrings",
         "flake8-rst-docstrings",
-        "isort",
+        "flake8-pyproject",
+        "nox-poetry",
         "pep8-naming",
         "pre-commit",
         "pre-commit-hooks",
+        "pytest-console-scripts",
         "pyupgrade",
+        "reorder-python-imports",
     )
     session.run("pre-commit", *args)
     if args and args[0] == "install":
@@ -147,26 +148,41 @@ def safety(session: Session) -> None:
 
 
 @session(python=python_versions)
-def mypy(session: Session) -> None:
-    """Type-check using mypy."""
-    args = session.posargs or ["src", "tests", "docs/conf.py"]
-    session.install(".")
-    session.install("mypy", "pytest")
-    session.run("mypy", *args)
-    if not session.posargs:
-        session.run("mypy", f"--python-executable={sys.executable}", "noxfile.py")
+def pyright(sessions: Session) -> None:
+    """Type-check using pyright.
+
+    Parameters
+    ----------
+    sessions: Session
+        The Session object.
+    """
+    args = sessions.posargs or ["src", "tests", "docs/conf.py"]
+    sessions.install(".")
+    sessions.install("pyright", "pytest", "pytest-mock")
+    sessions.run("pyright", *args)
+    if not sessions.posargs:
+        sessions.run("pyright", f"--pythonpath={sys.executable}", "noxfile.py")
 
 
 @session(python=python_versions)
-def tests(session: Session) -> None:
+def tests(sessions: Session) -> None:
     """Run the test suite."""
-    session.install(".")
-    session.install("coverage[toml]", "pytest", "pygments")
+    sessions.install(".")
+    sessions.install("coverage[toml]", "pytest", "pygments", "pytest-random-order", "pytest-mock")
     try:
-        session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
+        sessions.run(
+            "coverage",
+            "run",
+            "--parallel",
+            "-m",
+            "pytest",
+            "--random-order",
+            "--disable-pytest-warnings",
+            *sessions.posargs,
+        )
     finally:
-        if session.interactive:
-            session.notify("coverage", posargs=[])
+        if sessions.interactive:
+            sessions.notify("coverage", posargs=[])
 
 
 @session(python=python_versions[0])
@@ -183,11 +199,13 @@ def coverage(session: Session) -> None:
 
 
 @session(python=python_versions[0])
-def typeguard(session: Session) -> None:
+def typeguard(sessions: Session) -> None:
     """Runtime type checking using Typeguard."""
-    session.install(".")
-    session.install("pytest", "typeguard", "pygments")
-    session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
+    sessions.install(".")
+    sessions.install("pytest", "typeguard", "pygments", "pytest-random-order", "pytest-mock")
+    sessions.run(
+        "pytest", f"--typeguard-packages={package}", "--random-order", "--disable-pytest-warnings", *sessions.posargs
+    )
 
 
 @session(python=python_versions)
