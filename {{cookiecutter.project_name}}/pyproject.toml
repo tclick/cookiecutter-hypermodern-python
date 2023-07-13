@@ -225,6 +225,7 @@ ignore = [
 "tests/*" = ["S101", "ANN"]
 "noxfile.py" = ["S101"]
 "docs/*" = ["A001"]
+"cli.py" = ["ARG"]
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
