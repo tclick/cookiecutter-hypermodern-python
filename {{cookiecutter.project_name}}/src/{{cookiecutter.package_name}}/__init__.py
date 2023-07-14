@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 logger.remove()
 
 
-def config_logger(logfile: str = "mdsetup.log", level: str = "INFO") -> None:
+def config_logger(logfile: str = "{{cookiecutter.project_name}}.log", level: str = "INFO") -> None:
     """Configure logger.
 
     Parameters
